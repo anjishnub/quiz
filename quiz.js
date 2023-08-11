@@ -1,108 +1,124 @@
 const questions = [
-    {
-      question: "What is 1 + 1?",
-      options: ["1", "2", "3", "4"],
-      correctAnswer: "2",
-    },
-    {
-      question: "What is the capital of France?",
-      options: ["London", "Paris", "Berlin", "Rome"],
-      correctAnswer: "Paris",
-    },
-    // Add more questions here
-  ];
-  
-  let currentQuestion = 0;
-  let score = 0;
-  let quizStarted = false;
-  
-  function displayQuestion() {
-    const questionElement = document.getElementById("question");
-    const optionsElement = document.getElementById("options");
-    const currentQuizQuestion = questions[currentQuestion];
-  
-    questionElement.innerText = currentQuizQuestion.question;
-    optionsElement.innerHTML = "";
-  
-    currentQuizQuestion.options.forEach((option) => {
-      const button = document.createElement("button");
-      button.innerText = option;
-      button.dataset.option = option; // To store the option as a data attribute
-      button.onclick = () => checkAnswer(option);
-      optionsElement.appendChild(button);
-    });
+  {
+    question: "Which cities among these hosted a World Cup football match?",
+    options: ["London", "Paris", "Berlin", "Rome", "Tokyo", "Rio de Janeiro", "New York", "Cordoba", "Mexico City"],
+    correctAnswers: ["Paris", "Berlin", "Rio de Janeiro", "Rome", "London", "Mexico City"]
+  },
+  {
+    question: "Which countries have won the FIFA World Cup multiple times?",
+    options: ["Brazil", "Italy", "Germany", "Uruguay", "Argentina", "France", "Spain", "Netherlands", "England"],
+    correctAnswers: ["Brazil", "Italy", "Germany", "Uruguay", "Argentina", "France"]
   }
-  
-  function checkAnswer(selectedOption) {
-    if (!quizStarted) return;
-    
-    const currentQuizQuestion = questions[currentQuestion];
+
+
+];
+
+let currentQuestion = 0;
+let currentRound = 0;
+let quizStarted = false;
+let remainingAttempts = 6;
+
+function displayQuestion() {
+  const questionElement = document.getElementById("question");
+  const optionsElement = document.getElementById("options");
+  const currentQuizQuestion = questions[currentQuestion];
+
+  questionElement.innerText = currentQuizQuestion.question;
+  optionsElement.innerHTML = "";
+
+  currentQuizQuestion.options.forEach((option) => {
+    const button = document.createElement("button");
+    button.innerText = option;
+    button.dataset.option = option;
+    button.onclick = () => checkAnswer(option);
+    optionsElement.appendChild(button);
+  });
+}
+
+function checkAnswer(selectedOption) {
+  if (!quizStarted || remainingAttempts <= 0) return;
+
+  const currentQuizQuestion = questions[currentQuestion];
+  const button = document.querySelector(`#options button[data-option="${selectedOption}"]`);
+
+  if (currentQuizQuestion.correctAnswers.includes(selectedOption)) {
+    button.style.backgroundColor = "green";
+    button.style.color = "white";
+  } else {
+    button.style.backgroundColor = "red";
+    button.style.color = "white";
+    showCorrectAnswers();
+  }
+
+  button.disabled = true;
+  remainingAttempts--;
+
+  if (remainingAttempts === 0 || button.style.backgroundColor === "red") {
+    endRound();
+  }
+}
+
+function showCorrectAnswers() {
+  const currentQuizQuestion = questions[currentQuestion];
+  currentQuizQuestion.correctAnswers.forEach((correctAnswer) => {
+    const correctButton = document.querySelector(`#options button[data-option="${correctAnswer}"]`);
+    correctButton.style.backgroundColor = "green";
+    correctButton.style.color = "white";
+  });
+}
+
+
+
+function showResult() {
+  const quizContainer = document.querySelector(".quiz-container");
+  quizContainer.innerHTML = `
+    <h1>Quiz Finished</h1>
+  `;
+}
+
+function startQuiz() {
+  const startBtn = document.getElementById("start-btn");
+  startBtn.style.display = "none";
+
+  const quizContainer = document.querySelector(".quiz-container");
+  const quizContent = document.createElement("div");
+  quizContent.setAttribute("id", "quiz-content");
+  quizContainer.appendChild(quizContent);
+
+  currentQuestion = 0;
+  currentRound = 0;
+  quizStarted = true;
+  remainingAttempts = 6;
+
+  displayQuestion();
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  if (currentQuestion < questions.length) {
     const buttons = document.querySelectorAll("#options button");
-  
     buttons.forEach((button) => {
-      if (button.innerText === currentQuizQuestion.correctAnswer) {
-        button.style.backgroundColor = "green";
-        button.style.color = 'white';
-      } else if (button.innerText === selectedOption) {
-        button.style.backgroundColor = "red";
-        button.style.color = 'white';
-      }
-      button.disabled = true;
+      button.style.backgroundColor = "";
+      button.style.color = "";
+      button.disabled = false;
     });
-  
-    document.getElementById("options").style.pointerEvents = "none";
-  
-    if (selectedOption === currentQuizQuestion.correctAnswer) {
-      score += 2;
-    } else {
-      const correctButton = document.querySelector(`#options button[data-option="${currentQuizQuestion.correctAnswer}"]`);
-      correctButton.style.backgroundColor = "green";
-      correctButton.style.color = "white"
-      score -= 1;
-    }
-  
-    document.getElementById("score").innerText = `Score: ${score}`;
-    document.getElementById("next-btn").style.display = "block";
-  }
-  
-  function nextQuestion() {
-    currentQuestion++;
-    if (currentQuestion < questions.length) {
-      document.getElementById("next-btn").style.display = "none";
-      document.getElementById("options").style.pointerEvents = "auto";
-      const buttons = document.querySelectorAll("#options button");
-      buttons.forEach((button) => {
-        button.style.backgroundColor = "";
-        button.disabled = false;
-      });
-      displayQuestion();
-    } else {
-      showResult();
-    }
-  }
-  
-  function showResult() {
-    const quizContainer = document.querySelector(".quiz-container");
-    quizContainer.innerHTML = `
-      <h1>Quiz Finished</h1>
-      <p>Your final score: ${score}</p>
-    `;
-  }
-  
-  function startQuiz() {
-    const startBtn = document.getElementById("start-btn");
-    startBtn.style.display = "none";
-  
-    const quizContainer = document.querySelector(".quiz-container");
-    const quizContent = document.createElement("div");
-    quizContent.setAttribute("id", "quiz-content");
-    quizContainer.appendChild(quizContent);
-  
-    document.getElementById("score").innerText = "Score: 0";
-    currentQuestion = 0;
-    score = 0;
-    quizStarted = true;
-  
+
+    document.getElementById("next-btn").style.display = "none";
+    remainingAttempts = 6; // Reset remainingAttempts for the next question
     displayQuestion();
-  }
   
+  } else {
+   endRound()
+  }
+
+  
+}
+
+function endRound() {
+  const buttons = document.querySelectorAll("#options button");
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
+
+  document.getElementById("next-btn").style.display = "block";
+}
