@@ -35,6 +35,7 @@ function displayQuestion() {
   });
 }
 
+
 function checkAnswer(selectedOption) {
   if (!quizStarted || remainingAttempts <= 0) return;
 
@@ -44,19 +45,41 @@ function checkAnswer(selectedOption) {
   if (currentQuizQuestion.correctAnswers.includes(selectedOption)) {
     button.style.backgroundColor = "green";
     button.style.color = "white";
+    button.disabled = true;
+    currentQuizQuestion.selectedOptions = currentQuizQuestion.selectedOptions || [];
+    currentQuizQuestion.selectedOptions.push(selectedOption);
+
+    if (arraysEqual(currentQuizQuestion.selectedOptions.sort(), currentQuizQuestion.correctAnswers.sort())) {
+      document.getElementById("next-btn").style.display = "block"; // Display "Next" button only if all correct options are selected
+      disableAllButtons();
+    }
+
   } else {
     button.style.backgroundColor = "red";
     button.style.color = "white";
     showCorrectAnswers();
-  }
-
-  button.disabled = true;
-  remainingAttempts--;
-
-  if (remainingAttempts === 0 || button.style.backgroundColor === "red") {
-    endRound();
+    remainingAttempts = 0; // Stop the quiz after a wrong answer
   }
 }
+
+function disableAllButtons() {
+  const buttons = document.querySelectorAll("#options button");
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
+}
+
+
+
+function arraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false;
+  }
+  return true;
+}
+
+
 
 function showCorrectAnswers() {
   const currentQuizQuestion = questions[currentQuestion];
@@ -106,13 +129,12 @@ function nextQuestion() {
     document.getElementById("next-btn").style.display = "none";
     remainingAttempts = 6; // Reset remainingAttempts for the next question
     displayQuestion();
-  
   } else {
-   endRound()
+    showResult();
+    document.getElementById("next-btn").style.display = "none"; // Hide the "Next" button when all questions are done
   }
-
-  
 }
+
 
 function endRound() {
   const buttons = document.querySelectorAll("#options button");
